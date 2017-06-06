@@ -74,6 +74,7 @@ If `PATH` is not provided, reports are read from an IMAP server, otherwise they 
 The following options are always allowed:
 ```
 #        -d : Print debug info.
+#        -c : Specify path to configuration file.
 #        -r : Replace existing reports rather than failing.
 #  --delete : Delete processed message files (the XML is stored in the
 #             database for later reference).

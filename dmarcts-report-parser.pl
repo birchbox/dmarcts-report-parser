@@ -64,11 +64,13 @@
 # To run, this script needs custom configurations: a database server and
 # credentials and (if used) an IMAP server and credentials. These values can be
 # set inside the script or by providing them via <dmarcts-report-parser.conf> in
-# the current working directory.
+# the current working directory, or via the path specified with the '-c' 
+# command-line option.
 #
 # The following options are always allowed:
 #        -d : Print debug info.
 #        -r : Replace existing reports rather than failing.
+#        -c : Specify path to configuration file.
 #  --delete : Delete processed message files (the XML is stored in the
 #             database for later reference).
 #
@@ -106,7 +108,8 @@ our ($debug, $delete_reports, $maxsize_xml, $compress_xml,
 	$imapserver, $imapuser, $imappass, $imapssl, $imaptls, $delete_failed,
 	$imapmovefolder, $imapreadfolder, $imapopt);
 
-# config file will be searched in running directory, then in call path
+# config file will be searched in running directory, then in call path,
+# but may be overridden by the '-c' flag
 my $conf_file = 'dmarcts-report-parser.conf';
 
 
@@ -120,18 +123,10 @@ my $conf_file = 'dmarcts-report-parser.conf';
 # defaults
 $maxsize_xml 	= 50000;
 
-# load configuration
-if ( -e $conf_file ) {
-	do $conf_file;
-} elsif( -e  (File::Basename::dirname($0) . "/$conf_file" ) ) {
-	do ( File::Basename::dirname($0) . "/$conf_file" );
-} else {
-	die "Could not read config file '$conf_file' from current working directory or path (" . File::Basename::dirname($0) . ')'
-}
 
 # Get command line options.
 my %options = ();
-GetOptions( \%options, 'd', 'r', 'x', 'm', 'delete' );
+GetOptions( \%options, 'd', 'r', 'x', 'm', 'c=s', 'delete' );
 
 # Set default behaviour.
 use constant { TS_IMAP => 0, TS_MESSAGE_FILE => 1, TS_XML_FILE => 2, TS_MBOX_FILE => 3 };
@@ -141,6 +136,18 @@ our $reports_replace = 0;
 # Check for further command line arguments (interpreted as PATH)
 if ($ARGV[0]) {
 	$reports_source = TS_MESSAGE_FILE;
+}
+
+# Look for conf_file override first
+if (exists $options{c}) {$conf_file = $options{c};}
+
+# load configuration
+if ( -e $conf_file ) {
+	do $conf_file;
+} elsif( -e  (File::Basename::dirname($0) . "/$conf_file" ) ) {
+	do ( File::Basename::dirname($0) . "/$conf_file" );
+} else {
+	die "Could not read config file '$conf_file' from current working directory or path (" . File::Basename::dirname($0) . ')'
 }
 
 # Evaluate command line options
